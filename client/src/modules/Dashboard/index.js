@@ -3,7 +3,7 @@ import Img1 from "../../assets/img1.jpg";
 import tutorialsdev from "../../assets/Avatar.jpg";
 import Input from "../../components/Input";
 import { io } from "socket.io-client";
-
+const socket = io("http://localhost:8080");
 const Dashboard = () => {
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("user:detail"))
@@ -12,12 +12,7 @@ const Dashboard = () => {
   const [messages, setMessages] = useState({});
   const [message, setMessage] = useState("");
   const [users, setUsers] = useState([]);
-  const [socket, setSocket] = useState(null);
   const messageRef = useRef(null);
-
-  useEffect(() => {
-    setSocket(io("http://localhost:8080"));
-  }, []);
 
   useEffect(() => {
     socket?.emit("addUser", user?.id);
@@ -25,6 +20,7 @@ const Dashboard = () => {
       console.log("activeUsers :>> ", users);
     });
     socket?.on("getMessage", (data) => {
+      console.log(data, "getmessage");
       setMessages((prev) => ({
         ...prev,
         messages: [

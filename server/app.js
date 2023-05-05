@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const io = require("socket.io")(8080, {
   cors: {
-    origin: "http://localhost:3002",
+    origin: "http://localhost:3000",
   },
 });
 
@@ -25,15 +25,44 @@ app.use(cors());
 
 const port = process.env.PORT || 8000;
 
+// Connect Redis
+const redis = require("redis");
+
+const client = redis.createClient(6379, "127.0.0.1");
+
+/*const client = redis.createClient({
+  url: "redis://toni:Toni@1990@redis-19343.c100.us-east-1-4.ec2.cloud.redislabs.com:19343",
+});*/
+
+(async () => {
+  await client.connect();
+})();
+
+client.on("ready", () => {
+  console.log("Connected to Redis!");
+});
+
+client.on("error", (err) => {
+  console.log("Error in the Connection");
+});
+
 // Socket.io
 let users = [];
 io.on("connection", (socket) => {
   console.log("User connected", socket.id);
   socket.on("addUser", (userId) => {
+    client.hGetAll("users", (error, result) => {
+      if (error) {
+        console.error("Redis error:", error);
+      } else {
+        users = Object.values(result);
+      }
+    });
     const isUserExist = users.find((user) => user.userId === userId);
     if (!isUserExist) {
       const user = { userId, socketId: socket.id };
       users.push(user);
+      client.hSet("users", user.userId, JSON.stringify(user));
       io.emit("getUsers", users);
     }
   });
