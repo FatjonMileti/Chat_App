@@ -30,10 +30,6 @@ const redis = require("redis");
 
 const client = redis.createClient(6379, "127.0.0.1");
 
-/*const client = redis.createClient({
-  url: "redis://toni:Toni@1990@redis-19343.c100.us-east-1-4.ec2.cloud.redislabs.com:19343",
-});*/
-
 (async () => {
   await client.connect();
 })();
